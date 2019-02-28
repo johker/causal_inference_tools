@@ -5,7 +5,7 @@ import seaborn as sns
 # Toy example taken from
 # https://www.inference.vc/causal-inference-2-illustrating-interventions-in-a-toy-example/
 N = 10000;                # sample size
-sigma = 1;             # RBF kernel bandwidth
+sigma = 1;                # RBF kernel bandwidth
 
 # Producing joint distributions with different underlying causal strctures:
 # x -> y
@@ -47,3 +47,6 @@ k12 = rbf_kernel(d1_xy, d2_xy, 1/pow(sigma,2));
 # Kernel Two Sample test (Estimating the maximum mean discrepancy)
 # https://en.wikipedia.org/wiki/Kernel_embedding_of_distributions
 mmd_12 = 1/pow(N,2)*sum(map(sum, k1)) + 1/pow(N,2)*sum(map(sum, k2)) - 2/pow(N,2)*sum(map(sum, k12));
+
+# Conditional mean embeddings:
+lambda = 1;         # Reguarization parameter
