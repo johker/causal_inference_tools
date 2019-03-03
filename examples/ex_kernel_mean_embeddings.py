@@ -4,7 +4,7 @@ import seaborn as sns
 
 # Toy example taken from
 # https://www.inference.vc/causal-inference-2-illustrating-interventions-in-a-toy-example/
-N = 10000;                # sample size
+N = 1000;                 # sample size
 sigma = 1;                # RBF kernel bandwidth
 
 # Producing joint distributions with different underlying causal strctures:
@@ -38,15 +38,46 @@ sns.jointplot(x="x", y="y", data=df3);
 
 # The joint distributions are indistinguishable
 from sklearn.metrics.pairwise import rbf_kernel
+from numpy.linalg import inv
 
-# Radial basis kernel functions
-k1 = rbf_kernel(d1_xy, d1_xy, 1/pow(sigma,2));
-k2 = rbf_kernel(d2_xy, d2_xy, 1/pow(sigma,2));
-k12 = rbf_kernel(d1_xy, d2_xy, 1/pow(sigma,2));
+from sklearn.metrics.pairwise import manhattan_distances
+
+
+
+# Radial basis kernel functions: K(x, y) = exp(-gamma ||x-y||^2)
+# for each pair of rows x in X and y in Y.
+gamma = 1/pow(sigma,2);
+
+# Test pairwise
+ta = np.zeros((10,2));
+ta[:,0] = np.linspace(0,9,10);
+ta[:,1] = np.linspace(0,9,10);
+tb = ta; #np.zeros(10,).reshape(-1,1);
+ta.shape
+tb.shape
+# td =  rbf_kernel(ta, tb, gamma)
+td =  manhattan_distances(ta, tb)
+
+k1 = rbf_kernel(d1_xy, d1_xy, gamma);
+k2 = rbf_kernel(d2_xy, d2_xy, gamma);
+k12 = rbf_kernel(d1_xy, d2_xy, gamma);
 
 # Kernel Two Sample test (Estimating the maximum mean discrepancy)
 # https://en.wikipedia.org/wiki/Kernel_embedding_of_distributions
 mmd_12 = 1/pow(N,2)*sum(map(sum, k1)) + 1/pow(N,2)*sum(map(sum, k2)) - 2/pow(N,2)*sum(map(sum, k12));
 
-# Conditional mean embeddings:
-lambda = 1;         # Reguarization parameter
+# Conditional distribution embeddings:
+lbda = 0.5;                             # Reguarization parameter
+lambda_eye = np.identity(N) * lbda;
+
+# empirical estimate of µ_y|x
+L = np.zeros(N,N);
+x1 = d1_xy[:,0].reshape(-1,1);
+y1 = d1_xy[:,1].reshape(-1,1);
+
+K = rbf_kernel(x1,x1,gamma);
+L = rbf_kernel(y1,y1,gamma);
+
+ly = rbf_kernel(y1, d1_xy[0,0], gamma); # x[0] TODO: define as parameter
+mu_x_given_y = np.matmul(inv(L + lambda_eye),ly); # times phi
+mu_x_given_y.shape
