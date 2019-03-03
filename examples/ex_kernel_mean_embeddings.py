@@ -80,4 +80,3 @@ L = rbf_kernel(y1,y1,gamma);
 
 ly = rbf_kernel(y1, d1_xy[0,0], gamma); # x[0] TODO: define as parameter
 mu_x_given_y = np.matmul(inv(L + lambda_eye),ly); # times phi
-mu_x_given_y.shape
